@@ -45,6 +45,15 @@ describe("top-level server", function () {
     fakeServer.listen.firstCall.calledWith(4242).should.be.true;
   });
 
+  it("installs middleware that saves aside the raw body on a request", function () {
+    server.launch();
+
+    var middleware = fakeServer.use.firstCall.args[0],
+        req = { body: "a string" };
+    middleware(req, null, function () {});
+    req.rawBody.should.equal(req.body);
+  });
+
   it("installs the standard bodyParser", function () {
     var knownBodyParser = restify.bodyParser();
     sandbox.stub(restify, "bodyParser");
@@ -52,8 +61,7 @@ describe("top-level server", function () {
 
     server.launch();
 
-    fakeServer.use.calledOnce.should.be.true;
-    fakeServer.use.firstCall.args[0].should.be.equal(knownBodyParser);
+    fakeServer.use.secondCall.args[0].should.be.equal(knownBodyParser);
   });
 
   it("routes the GET /githubissues endpoint", function () {

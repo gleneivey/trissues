@@ -15,6 +15,9 @@ function launch() {
         }
       });
 
+  server.use(function (req, res, next) {
+    req.rawBody = req.body; return next();
+  });
   server.use(restify.bodyParser());
   server.get("/githubissues", handlers.githubissues);
   server.post("/fromtracker", handlers.fromtracker);

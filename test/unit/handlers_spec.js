@@ -198,22 +198,38 @@ describe("handlers", function () {
   });
 
   describe("/fromgithub", function () {
-    var fromGitHub, isIssueStub, updateStoryStub, next,
+    var fromGitHub, isIssueStub, verifySignatureStub, updateStoryStub, next,
         webhookHash = loadJsonFixture("githubWebhookLabelRemove"),
         req = { body: webhookHash };
 
     beforeEach(function () {
       fromGitHub = handlers.__get__("fromGitHub");
       isIssueStub = sandbox.stub(fromGitHub, "isIssueWithLabelChange");
+      verifySignatureStub = sandbox.stub(fromGitHub, "verifySignature");
       updateStoryStub = sandbox.stub(fromGitHub, "updateStoryLabelsInTracker");
     });
 
     afterEach(function () {
-      isIssueStub.calledOnce.should.be.true;
       next.calledOnce.should.be.true;
     });
 
+    it("discards webhooks with invalid signatures", function (done) {
+      verifySignatureStub.returns(false);
+      isIssueStub.returns(true);
+
+      next = sandbox.spy(function () {
+        res.send.calledOnce.should.be.true;
+        res.send.firstCall.args[0].should.equal(403);
+
+        done();
+      });
+      handlers.fromgithub(req, res, next);
+      verifySignatureStub.calledOnce.should.be.true;
+      updateStoryStub.called.should.be.false;
+    });
+
     it("ignores GH webhook POSTs that don't indicate label changes on an Issue", function (done) {
+      verifySignatureStub.returns(true);
       isIssueStub.returns(false);
       next = sandbox.spy(function () {
         res.send.calledOnce.should.be.true;
@@ -223,9 +239,11 @@ describe("handlers", function () {
       });
       handlers.fromgithub(req, res, next);
       updateStoryStub.called.should.be.false;
+      isIssueStub.calledOnce.should.be.true;
     });
 
     it("calls the method to update labels in Tracker if the webhook POST is a label change", function (done) {
+      verifySignatureStub.returns(true);
       isIssueStub.returns(true);
       next = sandbox.spy(function () {
         res.send.calledOnce.should.be.true;
@@ -236,6 +254,7 @@ describe("handlers", function () {
       handlers.fromgithub(req, res, next);
       updateStoryStub.called.should.be.true;
       updateStoryStub.firstCall.args[0].should.equal(webhookHash);
+      isIssueStub.calledOnce.should.be.true;
     });
   });
 });

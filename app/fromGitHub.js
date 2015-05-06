@@ -1,6 +1,7 @@
 var _ = require("lodash"),
     Promise = require("bluebird"),
     Client = require("pivotaltracker").Client,
+    Keygrip = require("keygrip"),
     helpers = require("./helpers"),
     trackerStateNames = [
       "unscheduled", "unstarted", "started", "finished",
@@ -92,6 +93,11 @@ fromGitHub = {
     });
 
     return wereDonePromise;
+  },
+
+  verifySignature: function (req) {
+    var keygrip = new Keygrip([config.github.webhooksecret], "sha1", "hex");
+    return keygrip.verify(req.rawBody, req.headers["x-hub-signature"]);
   }
 };
 

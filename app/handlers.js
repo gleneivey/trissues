@@ -22,6 +22,12 @@ function finishRequest(promises, res, next) {
   });
 }
 
+function failRequest(res, next, code, message) {
+  helpers.log(message);
+  res.send(code);
+  return next();
+}
+
 module.exports = {
   githubissues: function (req, res, next) {
     helpers.log("GET request for importable stories through /githubissues");
@@ -82,11 +88,14 @@ module.exports = {
     var promises = [],
         webhook = req.body;
     fromGitHub.setConfig(config);
+    if (!fromGitHub.verifySignature(req)) {
+      return failRequest(res, next, 403, "    WARNING: GitHub Webhook signature was not verified! Returning 403.");
+    }
     if (fromGitHub.isIssueWithLabelChange(webhook)) {
       var p = fromGitHub.updateStoryLabelsInTracker(webhook);
       promises.push(p);
     }
-    finishRequest(promises, res, next);
+    return finishRequest(promises, res, next);
   },
 
   fromtracker: function (req, res, next) {
@@ -94,9 +103,7 @@ module.exports = {
 
     var ipAddress = req.header("x-forwarded-for") || req.connection.remoteAddress;
     if (trackerIps.indexOf(ipAddress) === -1) {
-      helpers.log("    WARNING:  request from unknown IP address " + ipAddress + ", responding with 403");
-      res.send(403);
-      return next();
+      return failRequest(res, next, 403, "    WARNING:  request from unknown IP address " + ipAddress + ", responding with 403");
     }
 
     var promises = [],
@@ -111,6 +118,6 @@ module.exports = {
       }
     });
 
-    finishRequest(promises, res, next);
+    return finishRequest(promises, res, next);
   }
 };

@@ -67,6 +67,7 @@ $ cf push trissues --no-start #Doesn't restart cleanly.
 TRISSUES_AUTH_GITHUB={Github API key}
 TRISSUES_AUTH_TRACKER={Tracker API token}
 TRISSUES_GITHUB_REPO={owner name/repo name}
+TRISSUES_GITHUB_WEBHOOKSECRET={something}
 TRISSUES_TRACKER_PROJECTID={Tracker project id}
 TRISSUES_TRACKER_INTEGRATIONID={Tracker integration id}
         ```

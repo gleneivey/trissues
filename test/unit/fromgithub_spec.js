@@ -3,6 +3,7 @@
 
 require("should");
 var mitmFactory = require("mitm"),
+    Keygrip = require("keygrip"),
     config = require("environmental").config(),
     helpers = require("../../app/helpers"),
     testHelpers = require("./test_helpers.js"),
@@ -17,6 +18,7 @@ describe("fromGitHub", function () {
   beforeEach(function () {
     fromGitHub.setConfig(config);
     testHelpers.stubLogging(fromGitHub);
+    config.github.webhooksecret = "this is a secret key";
   });
 
   describe("#isIssueFromLabelChange", function () {
@@ -157,6 +159,29 @@ describe("fromGitHub", function () {
       fromGitHub
           .updateStoryLabelsInTracker(githubWebhookJson)
           .then(function () { done(); });
+    });
+  });
+
+  describe("#verifySignature", function () {
+    var req;
+    beforeEach(function () {
+      req = {
+        body: loadJsonFixture("githubWebhookLabelAdd"),
+        rawBody: loadJsonFile("githubWebhookLabelAdd"),
+        headers: {
+          "x-hub-signature": "not your signature"
+        }
+      };
+    });
+
+    it("returns true when the signature matches", function () {
+      var keygrip = new Keygrip([config.github.webhooksecret], "sha1", "hex");
+      req.headers["x-hub-signature"] = keygrip.sign(req.rawBody);
+      fromGitHub.verifySignature(req).should.be.true;
+    });
+
+    it("returns false when the signature doesn't match", function () {
+      fromGitHub.verifySignature(req).should.be.false;
     });
   });
 });
