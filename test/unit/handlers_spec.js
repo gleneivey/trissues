@@ -129,7 +129,7 @@ describe("handlers", function () {
         handlers.fromtracker(req, res, next);
       });
 
-      it("sends label updates to GH when linked story in Tracker changes state", function (done) {
+      function testFromTrackerSuccess(done) {
         var trackerStoryResponse = loadJsonFile("trackerLinkedStoryResponse"),
             issueGetResponse = loadJsonFile("githubIssueGetResponse"),
             projectId = 1286564,
@@ -165,6 +165,20 @@ describe("handlers", function () {
           done();
         });
         handlers.fromtracker(req, res, next);
+      }
+
+      it("sends label updates to GH when linked story in Tracker changes state", function (done) {
+        testFromTrackerSuccess(done);
+      });
+
+      it("sends updates even when x-forwarded-for contains multiple IPs", function (done) {
+        delete req.connection.remoteAddress;
+        req.header = function (key) {
+          return (key === "x-forwarded-for") ?
+            goodIp + ", 10.10.2.122" : null;
+        };
+
+        testFromTrackerSuccess(done);
       });
     });
 

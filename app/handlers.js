@@ -102,6 +102,7 @@ module.exports = {
     helpers.log("POST request to /fromtracker");
 
     var ipAddress = req.header("x-forwarded-for") || req.connection.remoteAddress;
+    ipAddress = ipAddress.split(",")[0];
     if (trackerIps.indexOf(ipAddress) === -1) {
       return failRequest(res, next, 403, "    WARNING:  request from unknown IP address " + ipAddress + ", responding with 403");
     }
