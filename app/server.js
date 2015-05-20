@@ -16,7 +16,9 @@ function launch() {
       });
 
   server.use(function (req, res, next) {
-    req.rawBody = req.body; return next();
+    // TODO:  this sucks, try again
+    req.rawBody = req.data;
+    return next();
   });
   server.use(restify.bodyParser());
   server.get("/githubissues", handlers.githubissues);

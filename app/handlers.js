@@ -16,8 +16,8 @@ function finishRequest(promises, res, next) {
     promises.push(Promise.resolve());
   }
   Promise.settle(promises).then(function () {
-    helpers.log("    sending response with status 200");
-    res.send(200);
+    helpers.log("    sending response with status 204");
+    res.send(204);
     return next();
   });
 }

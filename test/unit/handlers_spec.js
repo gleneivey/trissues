@@ -121,7 +121,7 @@ describe("handlers", function () {
       afterEach(function () {
         next.calledOnce.should.be.true;
         res.send.calledOnce.should.be.true;
-        res.send.firstCall.args[0].should.equal(200);
+        res.send.firstCall.args[0].should.equal(204);
       });
 
       it("accepts but ignores activity we don't care about", function () {
@@ -160,7 +160,7 @@ describe("handlers", function () {
 
         next = sandbox.spy(function () {
           res.send.calledOnce.should.be.true;
-          res.send.firstCall.args[0].should.equal(200);
+          res.send.firstCall.args[0].should.equal(204);
 
           done();
         });
@@ -247,7 +247,7 @@ describe("handlers", function () {
       isIssueStub.returns(false);
       next = sandbox.spy(function () {
         res.send.calledOnce.should.be.true;
-        res.send.firstCall.args[0].should.equal(200);
+        res.send.firstCall.args[0].should.equal(204);
 
         done();
       });
@@ -261,7 +261,7 @@ describe("handlers", function () {
       isIssueStub.returns(true);
       next = sandbox.spy(function () {
         res.send.calledOnce.should.be.true;
-        res.send.firstCall.args[0].should.equal(200);
+        res.send.firstCall.args[0].should.equal(204);
 
         done();
       });
